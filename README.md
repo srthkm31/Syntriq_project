@@ -44,9 +44,6 @@ Built a machine learning model to predict whether a customer is likely to leave 
 ## Repository Structure
 
 Syntriq/
-│
 ├── CreditCardFraudDetection/
-│
 ├── ChurnPrediction/
-│
-└── README.md
+|── README.md
