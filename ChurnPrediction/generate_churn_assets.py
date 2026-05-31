@@ -14,12 +14,10 @@ def main():
     print("Step 1: Loading Churn dataset...")
     df = pd.read_csv("Churn_Modelling.csv")
     
-    # Preprocessing
     df_clean = df.drop(['RowNumber', 'CustomerId', 'Surname'], axis=1)
     df_clean['BalanceSalaryRatio'] = df_clean['Balance'] / (df_clean['EstimatedSalary'] + 1)
     df_clean['IsSenior'] = (df_clean['Age'] > 50).astype(int)
     
-    # Keep copy for EDA boxplot before dummy encoding
     df_eda = df_clean.copy()
     
     df_clean = pd.get_dummies(df_clean, columns=['Geography', 'Gender'], drop_first=True)
@@ -33,7 +31,6 @@ def main():
     )
     
     print("Step 2: Training benchmark models...")
-    # Scale for Logistic Regression
     scaler = StandardScaler()
     X_train_scaled = scaler.fit_transform(X_train)
     X_test_scaled = scaler.transform(X_test)
@@ -51,20 +48,17 @@ def main():
     rf_prob = rf.predict_proba(X_test)[:, 1]
     rf_pred = rf.predict(X_test)
     
-    # Create assets folder
     os.makedirs("assets", exist_ok=True)
     
     print("Step 4: Generating visualizations...")
     sns.set_theme(style="whitegrid")
     
-    # 1. Churn vs Non-Churn Distribution
     plt.figure(figsize=(6, 4))
     ax = sns.countplot(x=y, hue=y, data=df_clean, palette=["#2E7D32", "#C62828"], legend=False)
     plt.title("Customer Churn Distribution", fontsize=12, fontweight='bold', pad=10)
     plt.xlabel("Customer Class (0 = Retained, 1 = Churned)", fontsize=10)
     plt.ylabel("Count", fontsize=10)
     
-    # Add count labels
     for p in ax.patches:
         height = p.get_height()
         ax.annotate(f'{int(height):,}',
@@ -76,7 +70,6 @@ def main():
     plt.close()
     print("Saved assets/churn_distribution.png")
 
-    # 2. ROC Curve Comparison
     plt.figure(figsize=(7, 5.5))
     fpr_lr, tpr_lr, _ = roc_curve(y_test, lr_prob)
     fpr_dt, tpr_dt, _ = roc_curve(y_test, dt_prob)
@@ -102,7 +95,6 @@ def main():
     plt.close()
     print("Saved assets/roc_curve.png")
 
-    # 3. Random Forest Confusion Matrix
     plt.figure(figsize=(6, 5))
     cm = confusion_matrix(y_test, rf_pred)
     labels = np.array([['True Retained\n(TN)', 'False Churned\n(FP)'],
@@ -126,7 +118,6 @@ def main():
     plt.close()
     print("Saved assets/confusion_matrix.png")
 
-    # 4. Top Feature Importance
     plt.figure(figsize=(8, 5))
     feature_importance = pd.DataFrame({
         'Feature': X.columns,
@@ -143,7 +134,6 @@ def main():
     plt.close()
     print("Saved assets/feature_importance.png")
 
-    # 5. Account Balance vs Churn Boxplot
     plt.figure(figsize=(7, 4.5))
     df_eda['Exited_Label'] = df_eda['Exited'].map({0: 'Retained', 1: 'Churned'})
     sns.boxplot(x='Exited_Label', y='Balance', hue='Exited_Label', data=df_eda, palette=["#2E7D32", "#C62828"], legend=False)
